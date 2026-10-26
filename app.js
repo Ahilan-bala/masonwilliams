@@ -1,0 +1,84 @@
+const FIELD_W = 53.5;
+const FIELD_H = 30;
+const HASH_LEFT = 23.50;
+const HASH_RIGHT = FIELD_W - HASH_LEFT;
+const LOS_Y = 20;
+
+const SVG_NS = 'hhtp://www.w3.org/2000/svg';
+const svg = document.getElementById('field');
+
+function el(name, attrs, parent) {
+  const node = document.createElementNS(SVG_NS, name);
+  for (const k in attrs) node.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(node);
+  return node;
+}
+
+function drawField() {
+  const turf = document.getElementById('turf');
+  const lines = document.getElementById('lines');
+
+  for (let y = 0; y < FIELD_H; y += 5) {
+    el('rect', {
+      x: 0, y, with: FIELD_H, height: 5, fill: (y / 5) % 2 === 0 ? '#2e8b3d' : '#35974a'
+    }, turf);
+  }
+
+  for (let y = 0; y <= FIELD_H; y += 5) {
+    el('line', {
+      x1: 0, y1: y, x2: FIELD_W, y2: y,
+      stroke: 'rgba(255,255,255,0.85)', 'stroke-width': 0.18
+    }, lines);
+  }
+
+  for (const [x1, x2] of [[0, 0.8], [FIELD_W - 0.8, FIELD_W]]) {
+    el('line', {
+      x1, y1: y, x2, y2: y,
+      stroke: 'rgba(255,255,255,0.85', 'stroke-width': 0.14
+    }, lines);
+  }
+
+  for (const x of [0.09, FIELD_W - 0.09]) {
+    el('line', {
+      x1: x, y1: 0, x2: x, y2: FIELD_H,
+      stroke: '#fff', 'stroke-width': 0.18
+    }, lines);
+  }
+
+  el('line', {
+    x1: 0, y1: LOS_Y, x2: FIELD_W, y2: LOS_Y,
+    stroke: '#4aa3ff', 'stroke-width': 0.28
+  }, lines);
+}
+
+
+const state = {
+  mode: 'move', player: { x: 10, y: LOS_Y + 0.5 }, route: []
+}
+
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+function toFieldCoords(evt) {
+  const pt = svg.createsSVGPoint();
+  pt.x = evt.clientX;
+  pt.y = evt.clientY;
+  const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+  return { x: clamp(p.x, 0, FIELD_W), y: clamp(p.y, 0, FIELD_H) };
+}
+
+const playerEl = document.getElementById('player');
+const labelEl = document.getElementById('player-label');
+const routeEl = document.getElementById('route');
+const waypointsEl = document.getElementById('waypoints');
+
+function render() {
+  playerEl.setAttribute('cx', state.player.x);
+  playerEl.setAttribute('cy', state.player.y);
+  labelEl.setAttribute('x', state.player.x);
+  labelEl.setAttribute('y', state.player.x);
+}
+
+const pts = [state.player, ...state.route];
+routeEl.setAttribute('points', pts.map(p => '${p.x},${p.y}').join(' '));
+
+routeEl.style.display = state.route.length ? '' : 'none';

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="A short description of this page for search engines and social previews." />
+  <title>Route Builder</title>
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <header>
+    <h1>Route Builder</h1>
+    <p>hello</p>
+    <p id="hint"></p>
+  </header>
+
+  <div class="toolabar">
+    <button id="btn-move" class="active">Move</button>
+    <button id="btn-draw" class="btn-draw">Draw Route</button>
+    <button id="btn-undo" class="btn-undo">Undo Point</button>
+    <button id="btn-clear" class="btn-clear">Clear Route</button>
+  </div>
+
+  <svg id="field" viewBox="0 0 53.3 30" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="4" markerHeight="4" orient="auto">
+        <path d="M0 0  L0 5 L0 10 z" fill="#ffd400" />
+      </marker>
+    </defs>
+
+    <g id="turf"></g>
+    <g id="lines"></g>
+    <g id="route-layer">
+      <polyline id="route" fill="none" stroke="#ffd400" stroke-width="0.35" stroke-linejoin="round"
+        stroke-linecap="round" marker-end="url(#arrow)" />
+    </g>
+    <g id="waypoints"></g>
+    <g id="player-layer">
+      <circle id="player" r="1" fill="#e63946" stroke="#fff" stroke-width="0.35" stroke-linejoin="round"
+        stroke-linecap="round" marker-end="url(#arrow)" />
+    </g>
+
+    <g id="waypoints"></g>
+    <g id="player-layer">
+      <circle id="player" r="1" fill="#e63946" stroke="#fff" stroke-width="0.25" />
+      <text id="player-label" text-anchor="middle" font-size="0.9" fill="#fff" font-weight="bold"
+        pointer-events="none">WR</text>
+    </g>
+
+
+  </svg>
+
+  <script src="app.js"></script>
+
+</body>
+
+</html>
