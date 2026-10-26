@@ -1,4 +1,6 @@
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
@@ -8,10 +10,24 @@ body {
   color: #eef1f5;
 }
 
-header h1 { margin: 0 0 4px; font-size: 1.5rem; }
-#hint { margin: 0 0 12px; color: #9aa7b5; font-size: 0.9rem; min-height: 1.2em; }
+header h1 {
+  margin: 0 0 4px;
+  font-size: 1.5rem;
+}
 
-.toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+#hint {
+  margin: 0 0 12px;
+  color: #9aa7b5;
+  font-size: 0.9rem;
+  min-height: 1.2em;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
 
 button {
   padding: 8px 14px;
@@ -22,18 +38,33 @@ button {
   font-size: 0.9rem;
   cursor: pointer;
 }
-button:hover { background: #2a3340; }
-button.active { background: #2d6cdf; border-color: #2d6cdf; }
+
+button:hover {
+  background: #2a3340;
+}
+
+button.active {
+  background: #2d6cdf;
+  border-color: #2d6cdf;
+}
 
 #field {
   display: block;
   width: 100%;
   max-width: 900px;
   border-radius: 10px;
-  touch-action: none;  
+  touch-action: none;
   user-select: none;
 }
 
-#field.draw-mode { cursor: crosshair; }
-#player { cursor: grab; }
-.waypoint { cursor: grab; }
+#field.draw-mode {
+  cursor: crosshair;
+}
+
+#player {
+  cursor: grab;
+}
+
+.waypoint {
+  cursor: grab;
+}

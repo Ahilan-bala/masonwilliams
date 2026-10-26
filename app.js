@@ -76,9 +76,22 @@ function render() {
   playerEl.setAttribute('cy', state.player.y);
   labelEl.setAttribute('x', state.player.x);
   labelEl.setAttribute('y', state.player.x);
+
+
+  const pts = [state.player, ...state.route];
+  routeEl.setAttribute('points', pts.map(p => '${p.x},${p.y}').join(' '));
+
+  routeEl.style.display = state.route.length ? '' : 'none';
+
+  waypointsEl.innerHTML = '';
+  state.route.forEach((p, i) => {
+    const c = el('circle', {
+      cx: p.x, cy: p.y, r: 0.45, class: 'waypoint',
+      fill: '#ffd400', stroke: '#12161c', 'stroke-width': 0.12
+    }, waypointsEl);
+    c.addEventListener('pointerdown', e => startWaypointDrag(e, i));
+  });
+
+  updateUI();
+
 }
-
-const pts = [state.player, ...state.route];
-routeEl.setAttribute('points', pts.map(p => '${p.x},${p.y}').join(' '));
-
-routeEl.style.display = state.route.length ? '' : 'none';
