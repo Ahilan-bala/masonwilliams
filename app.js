@@ -95,3 +95,19 @@ function render() {
   updateUI();
 
 }
+
+let drag = null;
+
+playerEl.addEventListener('pointerdown', e => {
+  if (state.mode !== 'move') return;
+  e.preventDefault();
+  const p = toFieldCoords(e);
+  drag = { type: 'player', last: p };
+});
+
+function startWaypointDrag(e, index) {
+  if (state.mode !== 'move') return;
+  e.preventDefault();
+  e.stopPropagation();
+  drag = { type: 'waypoint', index };
+}
