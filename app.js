@@ -111,3 +111,28 @@ function startWaypointDrag(e, index) {
   e.stopPropagation();
   drag = { type: 'waypoint', index };
 }
+
+
+window.addEventListener('pointermove', e => {
+  if (!drag) return;
+  const p = toFieldCoords(e);
+
+  if (drag.type === 'player') {
+
+    const dx = p.x - drag.last.x;
+    const dy = p.y - drag.last.y;
+    state.player.x = clamp(state.player.x + dx, 0, FIELD_W);
+    state.player.y = clamp(state.player.y + dy, 0, FIELD_H);
+    state.route.forEach(w => {
+      w.x = clamp(w.x + dx, 0, FIELD_W);
+      w.y = clamp(w.y + dy, 0, FIELD_H);
+    });
+    drag.last = p;
+  } else if (drag.type === 'waypoint') {
+    state.route[drag.index] = p;
+  }
+  render();
+});
+
+window.addEventListener('pointerup', () => { drag = null; });
+window.addEventListener('pointercancel', () => { drag = null; });
