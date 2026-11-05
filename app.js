@@ -136,3 +136,31 @@ window.addEventListener('pointermove', e => {
 
 window.addEventListener('pointerup', () => { drag = null; });
 window.addEventListener('pointercancel', () => { drag = null; });
+
+svg.addEventListener('pointerdown', e => {
+  if (state.mode !== 'draw') return;
+  e.preventDefault();
+  state.route.push(toFieldCoords(e));
+  render();
+});
+
+// ---------- Toolbar ----------
+const btnMove = document.getElementById('btn-move');
+const btnDraw = document.getElementById('btn-draw');
+const hint = document.getElementById('hint');
+
+function setMode(mode) {
+  state.mode = mode;
+  render();
+}
+
+btnMove.addEventListener('click', () => setMode('move'));
+btnDraw.addEventListener('click', () => setMode('draw'));
+document.getElementById('btn-undo').addEventListener('click', () => {
+  state.route.pop();
+  render();
+});
+document.getElementById('btn-clear').addEventListener('click', () => {
+  state.route = [];
+  render();
+});
