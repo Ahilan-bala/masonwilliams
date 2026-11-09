@@ -144,7 +144,6 @@ svg.addEventListener('pointerdown', e => {
   render();
 });
 
-// ---------- Toolbar ----------
 const btnMove = document.getElementById('btn-move');
 const btnDraw = document.getElementById('btn-draw');
 const hint = document.getElementById('hint');
@@ -164,3 +163,16 @@ document.getElementById('btn-clear').addEventListener('click', () => {
   state.route = [];
   render();
 });
+
+
+function updateUI() {
+  btnMove.classList.toggle('active', state.mode === 'move');
+  btnDraw.classList.toggle('active', state.mode === 'draw');
+  svg.classList.toggle('draw-mode', state.mode === 'draw');
+  hint.textContent = state.mode === 'move'
+    ? 'Drag the player to move them (the route follows). Drag yellow dots to reshape the route.'
+    : 'Click anywhere on the field to add route points. Switch to Move when you are done.';
+}
+
+drawField();
+render();
