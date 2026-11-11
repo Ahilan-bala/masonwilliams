@@ -182,5 +182,61 @@ function updateUI() {
     : 'Click anywhere on the field to add route points. Switch to Move when you are done.';
 }
 
+const STORAGE_KEY = 'routeBuilder.plays';
+
+function loadPlays() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+  } catch {
+    return {};
+  }
+}
+
+function writePlays(plays) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(plays));
+}
+
+function savePlay(name) {
+  if (!name) return;
+  const plays = loadPlays();
+  plays[name] = state.players;
+  writePlays(plays);
+  refreshPlayList(name);
+}
+
+function loadPlay(name) {
+  const play = loadPlays()[name];
+  if (!play) return;
+  state.players = play;
+  state.selectedId = play[0].id;
+  render();
+}
+
+function deletePlay(name) {
+  const plays = loadPlays();
+  delete plays[name];
+  writePlays(plays);
+  refreshPlayList();
+}
+
+function refreshPlayList(selectName) {
+  const list = document.getElementById('play-list');
+  list.innerHTML = '';
+  Object.keys(loadPlays()).forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = opt.textContent = name;
+    list.appendChild(opt);
+  });
+  if (selectName) list.value = selectName;
+}
+
+const nameInput = document.getElementById('play-name');
+const playList = document.getElementById('play-list');
+
+document.getElementById('btn-save').addEventListener('click', () => savePlay(nameInput.value.trim()));
+document.getElementById('btn-load').addEventListener('click', () => loadPlay(playList.value));
+document.getElementById('btn-delete').addEventListener('click', () => deletePlay(playList.value));
+
+refreshPlayList();
 drawField();
 render();
