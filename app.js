@@ -46,6 +46,18 @@ function drawField() {
       }, lines);
     }
   }
+
+  for (const x of [0.09, FIELD_W - 0.09]) {
+    el('line', {
+      x1: x, y1: 0, x2: x, y2: FIELD_H,
+      stroke: '#fff', 'stroke-width': 0.18
+    }, lines);
+  }
+
+  el('line', {
+    x1: 0, y1: LOS_Y, x2: FIELD_W, y2: LOS_Y,
+    stroke: '#4aa3ff', 'stroke-width': 0.28
+  }, lines);
 }
 
 const state = {
@@ -71,7 +83,7 @@ function render() {
   playerEl.setAttribute('cx', state.player.x);
   playerEl.setAttribute('cy', state.player.y);
   labelEl.setAttribute('x', state.player.x);
-  labelEl.setAttribute('y', state.player.x + 0.32);
+  labelEl.setAttribute('y', state.player.y + 0.32);
 
 
   const pts = [state.player, ...state.route];
