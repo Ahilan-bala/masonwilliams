@@ -27,6 +27,19 @@
     <select id="play-list"></select>
     <button id="btn-load">Load</button>
     <button id="btn-delete">Delete</button>
+    <select id="pos-select">
+      <option>QB</option>
+      <option>RB</option>
+      <option>WR</option>
+      <option>TE</option>
+      <option>OL</option>
+      <option>CB</option>
+      <option>S</option>
+      <option>LB</option>
+      <option>DL</option>
+    </select>
+    <button id="btn-add">Add player</button>
+    <button id="btn-remove">Remove selected</button>
   </div>
 
   <svg id="field" viewBox="0 0 53.3 30" xmlns="http://www.w3.org/2000/svg">
@@ -38,17 +51,10 @@
 
     <g id="turf"></g>
     <g id="lines"></g>
-    <g id="route-layer">
-      <polyline id="route" fill="none" stroke="#ffd400" stroke-width="0.35" stroke-linejoin="round"
-        stroke-linecap="round" marker-end="url(#arrow)" />
-    </g>
-
+    <g id="routes"></g>
     <g id="waypoints"></g>
-    <g id="player-layer">
-      <circle id="player" r="1" fill="#e63946" stroke="#fff" stroke-width="0.25" />
-      <text id="player-label" text-anchor="middle" font-size="0.9" fill="#fff" font-weight="bold"
-        pointer-events="none">WR</text>
-    </g>
+    <g id="players"></g>
+
 
 
   </svg>

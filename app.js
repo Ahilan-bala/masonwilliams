@@ -61,9 +61,24 @@ function drawField() {
 }
 
 const state = {
-  mode: 'move', player: { x: 10, y: LOS_Y + 0.5 }, route: []
-}
+  mode: 'move',
+  selectedId: 'WR',
+  players: [
+    // offense
+    { id: 'QB', team: 'off', x: 26.65, y: LOS_Y + 5, route: [] },
+    { id: 'RB', team: 'off', x: 30, y: LOS_Y + 5, route: [] },
+    { id: 'WR', team: 'off', x: 8, y: LOS_Y + 0.5, route: [] },
+    { id: 'TE', team: 'off', x: 33, y: LOS_Y + 0.5, route: [] },
+    // defense
+    { id: 'CB', team: 'def', x: 8, y: LOS_Y - 2, route: [] },
+    { id: 'S', team: 'def', x: 26.65, y: LOS_Y - 8, route: [] },
+    { id: 'LB', team: 'def', x: 30, y: LOS_Y - 4, route: [] }
+  ]
+};
 
+const TEAM_COLOR = { off: '#e63946', def: '#2d6cdf' };
+const getPlayer = id => state.players.find(p => p.id === id);
+const selected = () => getPlayer(state.selectedId);
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
 function toFieldCoords(evt) {
@@ -80,28 +95,47 @@ const routeEl = document.getElementById('route');
 const waypointsEl = document.getElementById('waypoints');
 
 function render() {
-  playerEl.setAttribute('cx', state.player.x);
-  playerEl.setAttribute('cy', state.player.y);
-  labelEl.setAttribute('x', state.player.x);
-  labelEl.setAttribute('y', state.player.y + 0.32);
-
-
-  const pts = [state.player, ...state.route];
-  routeEl.setAttribute('points', pts.map(p => `${p.x},${p.y}`).join(' '));
-
-  routeEl.style.display = state.route.length ? '' : 'none';
-
+  routesEl.innerHTML = '';
   waypointsEl.innerHTML = '';
-  state.route.forEach((p, i) => {
+  playersEl.innerHTML = '';
+
+  state.players.forEach(pl => {
+    if (pl.route.length) {
+      const pts = [pl, ...pl.route].map(p => `${p.x},${p.y}`).join(' ');
+      el('polyline', {
+        points: pts, fill: 'none', stroke: '#ffd400', 'stroke-width': 0.35,
+        'stroke-linejoin': 'round', 'stroke-linecap': 'round',
+        'marker-end': 'url(#arrow)'
+      }, routesEl);
+    }
+
+    if (pl.id === state.selectedId) {
+      pl.route.forEach((p, i) => {
+        const c = el('circle', {
+          cx: p.x, cy: p.y, r: 0.45, class: 'waypoint',
+          fill: '#ffd400', stroke: '#12161c', 'stroke-width': 0.12
+        }, waypointsEl);
+        c.addEventListener('pointerdown', e => startWaypointDrag(e, pl.id, i));
+      });
+    }
+
+    const isSel = pl.id === state.selectedId;
     const c = el('circle', {
-      cx: p.x, cy: p.y, r: 0.45, class: 'waypoint',
-      fill: '#ffd400', stroke: '#12161c', 'stroke-width': 0.12
-    }, waypointsEl);
-    c.addEventListener('pointerdown', e => startWaypointDrag(e, i));
+      cx: pl.x, cy: pl.y, r: 1, class: 'player',
+      fill: TEAM_COLOR[pl.team],
+      stroke: isSel ? '#ffd400' : '#fff',
+      'stroke-width': isSel ? 0.4 : 0.25
+    }, playersEl);
+    c.addEventListener('pointerdown', e => onPlayerDown(e, pl.id));
+
+    const t = el('text', {
+      x: pl.x, y: pl.y + 0.32, 'text-anchor': 'middle', 'font-size': 0.8,
+      fill: '#fff', 'font-weight': 'bold', 'pointer-events': 'none'
+    }, playersEl);
+    t.textContent = pl.id;
   });
 
   updateUI();
-
 }
 
 let drag = null;
