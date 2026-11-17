@@ -199,7 +199,7 @@ function writePlays(plays) {
 function savePlay(name) {
   if (!name) return;
   const plays = loadPlays();
-  plays[name] = state.players;
+  plays[name] = { player: state.player, route: state.route };
   writePlays(plays);
   refreshPlayList(name);
 }
@@ -207,8 +207,8 @@ function savePlay(name) {
 function loadPlay(name) {
   const play = loadPlays()[name];
   if (!play) return;
-  state.players = play;
-  state.selectedId = play[0].id;
+  state.player = play.player;
+  state.route = play.route;
   render();
 }
 
