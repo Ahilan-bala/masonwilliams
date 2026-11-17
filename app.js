@@ -60,6 +60,7 @@ function drawField() {
   }, lines);
 }
 
+
 const state = {
   mode: 'move',
   selectedId: 'WR',
@@ -77,9 +78,10 @@ const state = {
 };
 
 const TEAM_COLOR = { off: '#e63946', def: '#2d6cdf' };
+
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const getPlayer = id => state.players.find(p => p.id === id);
 const selected = () => getPlayer(state.selectedId);
-const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
 function toFieldCoords(evt) {
   const pt = svg.createSVGPoint();
@@ -89,10 +91,9 @@ function toFieldCoords(evt) {
   return { x: clamp(p.x, 0, FIELD_W), y: clamp(p.y, 0, FIELD_H) };
 }
 
-const playerEl = document.getElementById('player');
-const labelEl = document.getElementById('player-label');
-const routeEl = document.getElementById('route');
+const routesEl = document.getElementById('routes');
 const waypointsEl = document.getElementById('waypoints');
+const playersEl = document.getElementById('players');
 
 function render() {
   routesEl.innerHTML = '';
@@ -140,38 +141,40 @@ function render() {
 
 let drag = null;
 
-playerEl.addEventListener('pointerdown', e => {
-  if (state.mode !== 'move') return;
+function onPlayerDown(e, id) {
   e.preventDefault();
-  const p = toFieldCoords(e);
-  drag = { type: 'player', last: p };
-});
+  e.stopPropagation();
+  state.selectedId = id;
+  if (state.mode === 'move') {
+    drag = { type: 'player', id, last: toFieldCoords(e) };
+  }
+  render();
+}
 
-function startWaypointDrag(e, index) {
+function startWaypointDrag(e, id, index) {
   if (state.mode !== 'move') return;
   e.preventDefault();
   e.stopPropagation();
-  drag = { type: 'waypoint', index };
+  drag = { type: 'waypoint', id, index };
 }
-
 
 window.addEventListener('pointermove', e => {
   if (!drag) return;
   const p = toFieldCoords(e);
+  const pl = getPlayer(drag.id);
 
   if (drag.type === 'player') {
-
     const dx = p.x - drag.last.x;
     const dy = p.y - drag.last.y;
-    state.player.x = clamp(state.player.x + dx, 0, FIELD_W);
-    state.player.y = clamp(state.player.y + dy, 0, FIELD_H);
-    state.route.forEach(w => {
+    pl.x = clamp(pl.x + dx, 0, FIELD_W);
+    pl.y = clamp(pl.y + dy, 0, FIELD_H);
+    pl.route.forEach(w => {
       w.x = clamp(w.x + dx, 0, FIELD_W);
       w.y = clamp(w.y + dy, 0, FIELD_H);
     });
     drag.last = p;
-  } else if (drag.type === 'waypoint') {
-    state.route[drag.index] = p;
+  } else {
+    pl.route[drag.index] = p;
   }
   render();
 });
@@ -182,7 +185,7 @@ window.addEventListener('pointercancel', () => { drag = null; });
 svg.addEventListener('pointerdown', e => {
   if (state.mode !== 'draw') return;
   e.preventDefault();
-  state.route.push(toFieldCoords(e));
+  selected().route.push(toFieldCoords(e));
   render();
 });
 
@@ -198,23 +201,54 @@ function setMode(mode) {
 btnMove.addEventListener('click', () => setMode('move'));
 btnDraw.addEventListener('click', () => setMode('draw'));
 document.getElementById('btn-undo').addEventListener('click', () => {
-  state.route.pop();
+  selected().route.pop();
   render();
 });
 document.getElementById('btn-clear').addEventListener('click', () => {
-  state.route = [];
+  selected().route = [];
   render();
 });
-
 
 function updateUI() {
   btnMove.classList.toggle('active', state.mode === 'move');
   btnDraw.classList.toggle('active', state.mode === 'draw');
   svg.classList.toggle('draw-mode', state.mode === 'draw');
   hint.textContent = state.mode === 'move'
-    ? 'Drag the player to move them (the route follows). Drag yellow dots to reshape the route.'
-    : 'Click anywhere on the field to add route points. Switch to Move when you are done.';
+    ? `Selected: ${state.selectedId}. Drag a player to move them (their route follows). Click a player to select.`
+    : `Drawing route for ${state.selectedId}. Click the field to add points, or click another player to switch.`;
 }
+
+const DEFENSE_POSITIONS = ['CB', 'S', 'LB', 'DL'];
+
+function addPlayer(position) {
+  const team = DEFENSE_POSITIONS.includes(position) ? 'def' : 'off';
+
+  let id = position;
+  let n = 2;
+  while (getPlayer(id)) id = position + n++;
+
+  const count = state.players.filter(p => p.team === team).length;
+  state.players.push({
+    id, team,
+    x: 8 + (count % 8) * 5,
+    y: team === 'off' ? LOS_Y + 3 : LOS_Y - 3,
+    route: []
+  });
+  state.selectedId = id;
+  render();
+}
+
+function removeSelected() {
+  if (state.players.length <= 1) return;
+  state.players = state.players.filter(p => p.id !== state.selectedId);
+  state.selectedId = state.players[0].id;
+  render();
+}
+
+document.getElementById('btn-add').addEventListener('click', () => {
+  addPlayer(document.getElementById('pos-select').value);
+});
+document.getElementById('btn-remove').addEventListener('click', removeSelected);
 
 const STORAGE_KEY = 'routeBuilder.plays';
 
@@ -227,22 +261,30 @@ function loadPlays() {
 }
 
 function writePlays(plays) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(plays));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(plays));
+  } catch {
+    alert('Could not save: your browser is blocking local storage.');
+  }
 }
 
 function savePlay(name) {
   if (!name) return;
   const plays = loadPlays();
-  plays[name] = { player: state.player, route: state.route };
+  plays[name] = state.players;
   writePlays(plays);
   refreshPlayList(name);
 }
 
 function loadPlay(name) {
-  const play = loadPlays()[name];
+  let play = loadPlays()[name];
   if (!play) return;
-  state.player = play.player;
-  state.route = play.route;
+  if (!Array.isArray(play)) {
+    play = [{ id: 'WR', team: 'off', x: play.player.x, y: play.player.y, route: play.route }];
+  }
+  if (!play.length) return;
+  state.players = play;
+  state.selectedId = play[0].id;
   render();
 }
 
@@ -271,6 +313,6 @@ document.getElementById('btn-save').addEventListener('click', () => savePlay(nam
 document.getElementById('btn-load').addEventListener('click', () => loadPlay(playList.value));
 document.getElementById('btn-delete').addEventListener('click', () => deletePlay(playList.value));
 
-refreshPlayList();
 drawField();
 render();
+refreshPlayList();
